@@ -36,20 +36,20 @@
             --bg-page: #0f172a;
             --bg-sidebar: #1e293b;
             --card: #1e293b;
-            --primary: #3b82f6;
-            --primary-hover: #60a5fa;
-            --text-main: #f1f5f9;
+            --primary: #60a5fa; /* Lighter blue for better visibility on dark */
+            --primary-hover: #93c5fd;
+            --text-main: #e2e8f0; /* Less harsh white */
             --text-muted: #94a3b8;
             --border: #334155;
-            --ai-bubble: #1e40af;
-            --ai-bubble-text: #eff6ff;
-            --user-bubble: #334155;
-            --user-bubble-text: #f1f5f9;
+            --ai-bubble: #334155; /* Neutral slate instead of deep blue */
+            --ai-bubble-text: #f1f5f9;
+            --user-bubble: #1e293b; /* Darker slate for user */
+            --user-bubble-text: #e2e8f0;
             --header-bg: #1e293b;
             --input-bg: #0f172a;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-            --bg-accent: rgba(59, 130, 246, 0.1);
-            --border-accent: rgba(59, 130, 246, 0.3);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            --bg-accent: rgba(96, 165, 250, 0.1);
+            --border-accent: rgba(96, 165, 250, 0.2);
         }
 
         body {
@@ -717,6 +717,53 @@
             background: #3730a3;
             color: #e0e7ff;
         }
+        /* API Guide Styles */
+        .step { margin-bottom: 24px; }
+        .step-number {
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 50%;
+            font-weight: 700;
+            margin-right: 10px;
+        }
+        .step h2 {
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        .step p {
+            margin: 0 0 8px 0;
+            margin-left: 44px;
+            font-size: 0.95rem;
+        }
+        .step ul {
+            margin: 0;
+            margin-left: 44px;
+            padding-left: 20px;
+            font-size: 0.95rem;
+        }
+        .step li { margin-bottom: 4px; }
+        .note { 
+            background: var(--bg-accent); 
+            padding: 16px; 
+            border-radius: 12px; 
+            border: 1px solid var(--border-accent); 
+            margin-top: 24px;
+            font-size: 0.9rem;
+        }
+        .guide-code {
+            background: rgba(0,0,0,0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        [data-theme="dark"] .guide-code {
+            background: rgba(255,255,255,0.1);
+        }
     </style>
 </head>
 <body>
@@ -734,7 +781,7 @@
         </div>
         <div id="key-input-area">
             <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
-                <a href="gemini-api-guide.html" target="_blank" style="color: var(--primary); text-decoration: none; font-weight: 600;">How to get an API key?</a>
+                <a href="#" onclick="openApiGuideModal(); return false;" style="color: var(--primary); text-decoration: none; font-weight: 600;">How to get an API key?</a>
             </div>
             <input type="password" id="api-key" placeholder="Gemini API Key" style="width: 100%; border-radius: 8px; border: 1px solid var(--border); padding: 8px; margin-bottom: 10px; box-sizing: border-box;">
             <button onclick="saveKey()" style="width: 100%; background: var(--primary); color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 600;">Activate</button>
@@ -802,7 +849,7 @@
             <div style="display: flex; align-items: center; gap: 16px; transition: margin-left 0.3s;">
                 <div id="header-content" style="display: flex; align-items: center; gap: 16px; margin-left: 64px;">
                     <div>
-                        <div style="font-weight: 700; font-size: 1.1rem;" id="header-title">Project Intelligence</div>
+                        <div style="font-weight: 700; font-size: 1.1rem;" id="header-title">Scribe</div>
                         <div style="font-size: 0.85rem; color: var(--text-muted);" id="source-count">Trained on Local Documentation</div>
                     </div>
                 </div>
@@ -817,15 +864,9 @@
 
         <div class="messages" id="messages">
             <div class="message ai">
-                Welcome to your project notebook. I have indexed all your documentation. 
+                Welcome to Scribe. I'm ready to help you with your documentation.
                 <br><br>
-                What would you like to explore today? You can ask about:
-                <ul>
-                    <li>Deployment & System configuration</li>
-                    <li>SMTP & Postfix setup</li>
-                    <li>Clickhouse & Redis optimization</li>
-                    <li>JWT flows and security</li>
-                </ul>
+                What would you like to explore today?
             </div>
         </div>
 
@@ -845,33 +886,93 @@
 <div id="add-source-modal" class="modal-overlay">
     <div class="modal">
         <div class="modal-header">
-            <div class="modal-title">Add New Source</div>
+            <div class="modal-title">Add Source</div>
             <button onclick="closeAddSourceModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);">&times;</button>
         </div>
         
         <div class="source-type-toggle">
-            <button id="type-file" class="type-btn active" onclick="switchSourceType('file')">Upload File</button>
-            <button id="type-text" class="type-btn" onclick="switchSourceType('text')">Paste Text</button>
+            <button class="type-btn active" id="btn-text" onclick="switchSourceType('text')">Text / Paste</button>
+            <button class="type-btn" id="btn-file" onclick="switchSourceType('file')">Upload File</button>
+            <button class="type-btn" id="btn-url" onclick="switchSourceType('url')">Import URL</button>
         </div>
 
-        <div id="file-input-area">
-            <div style="border: 2px dashed var(--border); padding: 30px; text-align: center; border-radius: 16px; cursor: pointer;" onclick="document.getElementById('file-upload').click()">
-                <div style="font-size: 2rem; margin-bottom: 10px;">📄</div>
-                <div style="font-weight: 600; font-size: 0.9rem;">Click to upload .md, .html, or .txt</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Max 2MB per file</div>
-                <input type="file" id="file-upload" style="display: none;" accept=".md,.html,.txt" onchange="handleFileUpload(event)">
-            </div>
+        <div id="file-input-area" style="display: none; text-align: center; padding: 40px; border: 2px dashed var(--border); border-radius: 12px; cursor: pointer;" onclick="document.getElementById('file-upload').click()">
+            <div style="font-size: 2rem; margin-bottom: 10px;">📄</div>
+            <div style="font-weight: 600; font-size: 0.9rem;">Click to upload .md, .html, or .txt</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Max 2MB per file</div>
+            <input type="file" id="file-upload" style="display: none;" accept=".md,.html,.txt" onchange="handleFileUpload(event)">
             <div id="file-name-preview" style="margin-top: 12px; font-size: 0.85rem; color: var(--primary); font-weight: 600; display: none;"></div>
         </div>
 
-        <div id="text-input-area" style="display: none;">
-            <input type="text" id="custom-title" placeholder="Source Title (e.g. My Notes)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 12px; font-family: inherit;">
-            <textarea id="custom-text" placeholder="Paste your link content or notes here..." style="width: 100%; height: 200px; padding: 12px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; resize: none;"></textarea>
+        <div id="text-input-area">
+            <input type="text" id="custom-title" placeholder="Source Title (e.g. My Notes)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 12px; font-family: inherit; background: var(--input-bg); color: var(--text-main);">
+            <textarea id="custom-text" placeholder="Paste your link content or notes here..." style="width: 100%; height: 200px; padding: 12px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; resize: vertical; background: var(--input-bg); color: var(--text-main);"></textarea>
+        </div>
+
+        <div id="url-input-area" style="display: none;">
+            <p style="margin-top: 0; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px;">
+                Enter a public URL to fetch its content via proxy.
+            </p>
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <input type="text" id="source-url" placeholder="https://example.com/doc.html" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text-main);">
+                <button onclick="fetchUrlContent()" style="padding: 0 16px; background: var(--user-bubble); border: 1px solid var(--border); border-radius: 8px; font-weight: 600; cursor: pointer; color: var(--text-main);">Fetch</button>
+            </div>
+            <div id="url-status" style="font-size: 0.85rem; margin-bottom: 10px; min-height: 20px;"></div>
+            <textarea id="url-content-preview" placeholder="Content preview..." readonly style="width: 100%; height: 150px; padding: 10px; border-radius: 8px; border: 1px solid var(--border); resize: vertical; margin-bottom: 12px; font-family: monospace; background: var(--bg-page); color: var(--text-muted);"></textarea>
         </div>
 
         <div class="modal-footer">
             <button class="btn-outline" onclick="closeAddSourceModal()">Cancel</button>
             <button id="add-source-btn" onclick="addCustomSource()" style="background: var(--primary); color: white; border: none; padding: 10px 24px; border-radius: 10px; cursor: pointer; font-weight: 600;">Add to Context</button>
+        </div>
+    </div>
+</div>
+
+<!-- API Guide Modal -->
+<div id="api-guide-modal" class="modal-overlay">
+    <div class="modal" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+        <div class="modal-header">
+            <div class="modal-title">Scribe API Setup Guide</div>
+            <button onclick="closeApiGuideModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);">&times;</button>
+        </div>
+        
+        <div style="padding-bottom: 20px;">
+            <p style="margin-top: 0;">Follow these steps to get a free API key and activate your Scribe.</p>
+
+            <div class="step">
+                <h2><span class="step-number">1</span> Visit Google AI Studio</h2>
+                <p>Open <a href="https://aistudio.google.com/" target="_blank" style="color: var(--primary); text-decoration: none; font-weight: 600;">Google AI Studio (aistudio.google.com)</a> in a new tab.</p>
+            </div>
+
+            <div class="step">
+                <h2><span class="step-number">2</span> Sign In</h2>
+                <p>Sign in using your standard Google or Gmail account.</p>
+            </div>
+
+            <div class="step">
+                <h2><span class="step-number">3</span> Generate API Key</h2>
+                <ul>
+                    <li>Click on <strong>"Get API key"</strong> in the top left sidebar menu.</li>
+                    <li>Click the blue button: <strong>"Create API key"</strong>.</li>
+                    <li>Choose <strong>"Create API key in new project"</strong> (if prompted).</li>
+                    <li><strong>Copy the generated key</strong> to your clipboard.</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <h2><span class="step-number">4</span> Activate the Assistant</h2>
+                <p>Paste your key in the sidebar of this page and click <strong>"Activate"</strong>.</p>
+            </div>
+
+            <div class="note">
+                <strong>Privacy & Security:</strong><br>
+                Your API key is stored locally in your browser and is only sent directly to Google's official API endpoints. We do not store or see your key.
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-outline" onclick="closeApiGuideModal()">Close</button>
+            <button onclick="closeApiGuideModal(); document.getElementById('api-key').focus();" style="background: var(--primary); color: white; border: none; padding: 10px 24px; border-radius: 10px; cursor: pointer; font-weight: 600;">I have the key</button>
         </div>
     </div>
 </div>
@@ -942,8 +1043,8 @@
     function initBranding() {
         if (typeof PROJECT_CONFIG !== 'undefined') {
             const name = PROJECT_CONFIG.name || 'Project';
-            document.title = `${name} | AI Document Notebook`;
-            document.getElementById('header-title').textContent = `AI Document Notebook`;
+            document.title = `${name} | Scribe`;
+            document.getElementById('header-title').textContent = `Scribe`;
             
             // Welcome Message logic is now handled based on connection state
             updateWelcomeMessage(name);
@@ -955,11 +1056,11 @@
         if (!welcomeMsg) return;
 
         if (localStorage.getItem('workspace-connected') === 'true') {
-            welcomeMsg.innerHTML = `Welcome back to your <b>AI Document Notebook</b>. I have loaded the documentation for the <b>${projectName}</b> workspace. 
+            welcomeMsg.innerHTML = `Welcome back to <b>Scribe</b>. I have loaded the documentation for the <b>${projectName}</b> workspace. 
             <br><br>
             What would you like to explore today?`;
         } else {
-            welcomeMsg.innerHTML = `Hello! I am your <b>AI Document Notebook</b>. 
+            welcomeMsg.innerHTML = `Hello! I am <b>Scribe</b>. 
             <br><br>
             Your workspace is currently empty. You can <b>Load Local Workspace</b> (the parent directory) or add your own temporary sources using the sidebar.`;
         }
@@ -1355,10 +1456,57 @@
     }
 
     function switchSourceType(type) {
-        document.getElementById('type-file').classList.toggle('active', type === 'file');
-        document.getElementById('type-text').classList.toggle('active', type === 'text');
+        document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`btn-${type}`).classList.add('active');
+
         document.getElementById('file-input-area').style.display = type === 'file' ? 'block' : 'none';
         document.getElementById('text-input-area').style.display = type === 'text' ? 'block' : 'none';
+        document.getElementById('url-input-area').style.display = type === 'url' ? 'block' : 'none';
+    }
+
+    async function fetchUrlContent() {
+        const urlInput = document.getElementById('source-url');
+        const statusDiv = document.getElementById('url-status');
+        const previewArea = document.getElementById('url-content-preview');
+        const titleInput = document.getElementById('custom-title');
+        
+        const url = urlInput.value.trim();
+        if (!url) return;
+
+        statusDiv.innerHTML = '<span style="color:var(--text-muted)">Fetching...</span>';
+        previewArea.value = '';
+
+        try {
+            const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+            if (!response.ok) throw new Error('Network response was not ok');
+            
+            const data = await response.json();
+            if (!data.contents) throw new Error('No content retrieved');
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(data.contents, 'text/html');
+            doc.querySelectorAll('script, style, noscript, svg, img').forEach(el => el.remove());
+            const textContent = doc.body.innerText.replace(/\n\s*\n/g, '\n').trim();
+            
+            previewArea.value = textContent;
+            statusDiv.innerHTML = '<span style="color:#34a853">Successfully fetched!</span>';
+            
+            if (!titleInput.value) {
+                try {
+                    const urlObj = new URL(url);
+                    let name = urlObj.pathname.split('/').pop() || 'index';
+                    if (!name.includes('.')) name += '.html';
+                    titleInput.value = name;
+                } catch (e) {
+                    titleInput.value = 'downloaded-content.txt';
+                }
+            }
+
+        } catch (error) {
+            console.error(error);
+            statusDiv.innerHTML = `<span style="color:#d93025">Error: ${error.message}</span>`;
+            previewArea.value = "Failed to fetch content. The site might be blocking proxy requests.";
+        }
     }
 
     function handleFileUpload(event) {
@@ -1379,12 +1527,17 @@
 
     function addCustomSource() {
         let title, content;
-        const isFile = document.getElementById('type-file').classList.contains('active');
+        const isFile = document.getElementById('btn-file').classList.contains('active');
+        const isUrl = document.getElementById('btn-url').classList.contains('active');
 
         if (isFile) {
             if (!currentUploadData) { alert('Please select a file first.'); return; }
             title = currentUploadData.title;
             content = currentUploadData.content;
+        } else if (isUrl) {
+            title = document.getElementById('custom-title').value.trim() || 'URL Content';
+            content = document.getElementById('url-content-preview').value;
+            if (!content) { alert('Please fetch URL content first.'); return; }
         } else {
             title = document.getElementById('custom-title').value.trim() || 'Pasted Text';
             content = document.getElementById('custom-text').value.trim();
@@ -1392,12 +1545,11 @@
         }
 
         const customId = `CUSTOM_${Date.now()}`;
-        const newSource = { [customId]: content, title: title }; // Store title as extra info
         
         // Save to LocalStorage
         const existing = JSON.parse(localStorage.getItem('CUSTOM_SOURCES') || '{}');
         existing[customId] = content;
-        // We actually need to store the mapping of ID to {content, title} for the UI
+        
         const meta = JSON.parse(localStorage.getItem('CUSTOM_SOURCES_META') || '{}');
         meta[customId] = title;
         
@@ -1415,6 +1567,15 @@
         const existing = JSON.parse(localStorage.getItem('CUSTOM_SOURCES') || '{}');
         Object.assign(DOCS_CONTEXT, existing);
         renderSources();
+    }
+
+    // API Guide Modal Logic
+    function openApiGuideModal() {
+        document.getElementById('api-guide-modal').style.display = 'flex';
+    }
+
+    function closeApiGuideModal() {
+        document.getElementById('api-guide-modal').style.display = 'none';
     }
 
     // (Variables moved to top)

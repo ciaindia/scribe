@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Scribe</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        :root {
+            /* Light Theme (Default) */
+            --bg-page: #f0f4f9;
+            --bg-sidebar: #f8fafc;
+            --card: #ffffff;
+            --primary: #1a73e8;
+            --primary-hover: #1765cc;
+            --text-main: #1f1f1f;
+            --text-muted: #5f6368;
+            --border: #dee1e5;
+            --ai-bubble: #e8f0fe;
+            --ai-bubble-text: #1f1f1f;
+            --user-bubble: #f1f3f4;
+            --user-bubble-text: #1f1f1f;
+            --header-bg: #ffffff;
+            --input-bg: #ffffff;
+            --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            --bg-accent: #fff8e1;
+            --border-accent: #ffe082;
+        }
+
+        [data-theme="dark"] {
+            --bg-page: #0f172a;
+            --bg-sidebar: #1e293b;
+            --card: #1e293b;
+            --primary: #3b82f6;
+            --primary-hover: #60a5fa;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --ai-bubble: #1e40af;
+            --ai-bubble-text: #eff6ff;
+            --user-bubble: #334155;
+            --user-bubble-text: #f1f5f9;
+            --header-bg: #1e293b;
+            --input-bg: #0f172a;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --bg-accent: rgba(59, 130, 246, 0.1);
+            --border-accent: rgba(59, 130, 246, 0.3);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-page);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styling (Notebook Source Panel) */
+        .sidebar {
+            width: 320px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 100;
+            flex-shrink: 0;
+            height: 100vh;
+        }
+
+        .sidebar.collapsed {
+            margin-left: -320px;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .sidebar h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar h2::before { content: "📚"; }
+
+        .api-key-section {
+            background: var(--bg-accent);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-accent);
+            margin-bottom: 24px;
+        }
+
+        .source-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .source-list h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .source-item {
+            padding: 6px 12px;
+            border-radius: 8px;
+            margin-bottom: 2px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            display: grid;
+            grid-template-columns: 20px 24px 1fr 32px;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .source-item:hover { 
+            background: rgba(0,0,0,0.05);
+        }
+
+        [data-theme="dark"] .source-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .source-item::before { 
+            content: "📄"; 
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            grid-column: 2;
+        }
+
+        .source-item input { 
+            margin: 0; 
+            cursor: pointer; 
+            width: 14px;
+            height: 14px;
+            grid-column: 1;
+        }
+
+        .source-item label { 
+            cursor: pointer; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            padding-left: 6px;
+            font-weight: 400;
+            grid-column: 3;
+        }
+
+        .delete-btn {
+            grid-column: 4;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+        .source-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        /* Tree View Styling */
+        .tree-container {
+            margin-left: 0;
+        }
+
+        .source-folder {
+            cursor: pointer;
+            padding: 8px 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            border-radius: 8px;
+            transition: background 0.2s;
+            margin-top: 4px;
+            margin-bottom: 2px;
+            user-select: none;
+        }
+
+        .source-folder:hover {
+            background: rgba(0,0,0,0.05);
+        }
+
+        [data-theme="dark"] .source-folder:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .chevron {
+            font-size: 0.7rem;
+            transition: transform 0.2s;
+            color: var(--text-muted);
+            width: 12px;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .folder-icon {
+            font-size: 1rem;
+        }
+
+        .source-folder.collapsed .chevron {
+            transform: rotate(-90deg);
+        }
+
+        .folder-content {
+            margin-left: 18px;
+            display: block;
+            border-left: 1px solid var(--border);
+            padding-left: 8px;
+        }
+
+        .source-folder.collapsed + .folder-content {
+            display: none;
+        }
+
+        /* Empty State Styling */
+        .workspace-empty {
+            padding: 40px 20px;
+            text-align: center;
+            background: rgba(0,0,0,0.02);
+            border: 2px dashed var(--border);
+            border-radius: 20px;
+            margin: 10px;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            filter: grayscale(1);
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .empty-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            line-height: 1.4;
+        }
+
+        .connect-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            width: 100%;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-2px);
+            background: var(--primary-hover);
+        }
+
+        .secondary-action {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .secondary-action:hover {
+            background: var(--bg-page);
+            border-color: var(--primary);
+        }
+
+        /* Sidebar Toggle (AI Studio Style) */
+        .sidebar-toggle {
+            position: fixed;
+            left: 300px; /* Sits near the edge of 320px sidebar */
+            top: 14px;
+            z-index: 1000;
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--bg-page);
+            color: var(--primary);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .sidebar.collapsed + .sidebar-toggle {
+            left: 14px;
+        }
+
+        .sidebar-toggle svg {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.3s;
+        }
+
+        .sidebar.collapsed + .sidebar-toggle svg {
+            transform: rotate(180deg);
+        }
+
+        /* Main Chat Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            background: var(--bg-page);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .notebook-container {
+            flex: 1;
+            background: var(--card);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+            transition: max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body.sidebar-collapsed .notebook-container {
+            max-width: 1400px;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                z-index: 2000;
+                box-shadow: 10px 0 30px rgba(0,0,0,0.2);
+            }
+
+            .sidebar-toggle {
+                left: 330px; /* Stay just outside sidebar when open */
+                width: 44px;
+                height: 44px;
+            }
+
+            .sidebar.collapsed + .sidebar-toggle {
+                left: 10px;
+            }
+
+            .main-content {
+                padding: 0;
+            }
+
+            .notebook-container {
+                max-width: 100%;
+                border-radius: 0;
+                height: 100vh;
+            }
+
+            .chat-header {
+                padding: 12px 16px;
+            }
+
+            #header-content {
+                margin-left: 40px !important;
+            }
+
+            .messages {
+                padding: 16px;
+            }
+
+            .message {
+                max-width: 90%;
+                font-size: 0.95rem;
+            }
+
+            .input-wrapper {
+                padding: 16px;
+            }
+        }
+
+        .chat-header {
+            padding: 20px 32px;
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header .status {
+            font-size: 0.9rem;
+            color: #34a853;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chat-header .status::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            background: #34a853;
+            border-radius: 50%;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 16px 20px;
+            border-radius: 18px;
+            font-size: 1rem;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .user {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai {
+            align-self: flex-start;
+            background: var(--ai-bubble);
+            color: var(--ai-bubble-text);
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        /* Input Area (Floating Style) */
+        .input-wrapper {
+            padding: 24px 32px;
+            background: var(--header-bg);
+            border-top: 1px solid var(--border);
+        }
+
+        .input-box {
+            background: var(--input-bg);
+            border-radius: 28px;
+            display: flex;
+            padding: 8px 16px 8px 24px;
+            align-items: center;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        .input-box:focus-within {
+            background: white;
+            border-color: var(--primary);
+            box-shadow: 0 1px 6px rgba(32,33,36,0.28);
+        }
+
+        input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 12px 0;
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .send-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 12px;
+            transition: background 0.2s;
+        }
+
+        .send-btn:hover { background: var(--primary-hover); }
+
+        .send-btn svg { width: 20px; height: 20px; fill: currentColor; }
+
+        /* Marked.js adjustments */
+        .message p { margin: 0 0 10px 0; }
+        .message p:last-child { margin: 0; }
+        .message pre {
+            background: rgba(0,0,0,0.05);
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+        .ai pre { background: white; border: 1px solid var(--border); }
+
+        .typing-indicator {
+            font-style: italic;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        .header-btn {
+            background: var(--user-bubble);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 8px 16px;
+            height: 44px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--text-main);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .header-btn:hover {
+            transform: translateY(-2px);
+            background: var(--border);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .header-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Modal Styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: var(--card);
+            width: 500px;
+            max-width: 90%;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .source-type-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: var(--bg-page);
+            padding: 4px;
+            border-radius: 10px;
+        }
+
+        .type-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            background: transparent;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+
+        .filter-section {
+            padding: 12px;
+            background: var(--bg-page);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .filter-group {
+            margin-bottom: 8px;
+        }
+
+        .filter-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .filter-input {
+            width: 100%;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 8px;
+            font-size: 0.8rem;
+            color: var(--text-main);
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .type-btn.active {
+            background: var(--card);
+            color: var(--primary);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .modal-footer {
+            margin-top: 24px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .source-tag {
+            font-size: 0.65rem;
+            background: #eef2ff;
+            color: #4f46e5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        [data-theme="dark"] .source-tag {
+            background: #3730a3;
+            color: #e0e7ff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>Scribe</h2>
+    
+    <!-- Hidden input for directory selection -->
+    <input type="file" id="dir-picker" webkitdirectory directory style="display:none" onchange="handleDirSelect(event)">
+    
+    <div class="api-key-section" id="api-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="font-weight: 600; font-size: 0.9rem;">API Settings</div>
+            <button onclick="resetKey()" style="background:none; border:none; color:var(--primary); font-size:0.7rem; cursor:pointer; text-decoration:underline;">Reset</button>
+        </div>
+        <div id="key-input-area">
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
+                <a href="gemini-api-guide.html" target="_blank" style="color: var(--primary); text-decoration: none; font-weight: 600;">How to get an API key?</a>
+            </div>
+            <input type="password" id="api-key" placeholder="Gemini API Key" style="width: 100%; border-radius: 8px; border: 1px solid var(--border); padding: 8px; margin-bottom: 10px; box-sizing: border-box;">
+            <button onclick="saveKey()" style="width: 100%; background: var(--primary); color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 600;">Activate</button>
+        </div>
+        
+        <div style="margin-top: 16px;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Active Model:</label>
+            <select id="model-select" onchange="updateModel()" style="width: 100%; border-radius: 8px; border: 1px solid var(--border); padding: 8px; margin-top: 4px; font-family: inherit; font-size: 0.85rem; background: white;">
+                <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+                <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+                <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+                <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+                <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite</option>
+            </select>
+        </div>
+
+        <button onclick="checkModels()" style="width: 100%; background: none; color: var(--text-muted); border: 1px solid var(--border); padding: 6px; border-radius: 8px; cursor: pointer; font-size: 0.75rem; margin-top: 12px;">Update Model List</button>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="filter-group">
+            <label>Files to Include</label>
+            <input type="text" id="filter-include" class="filter-input" placeholder="e.g. *.js, docs/**" oninput="debounceFilter()">
+        </div>
+        <div class="filter-group" style="margin-bottom: 0;">
+            <label>Files to Exclude</label>
+            <input type="text" id="filter-exclude" class="filter-input" placeholder="e.g. node_modules/**, *.log" oninput="debounceFilter()">
+        </div>
+    </div>
+
+    <div class="source-list">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <h3>Sources Indexed</h3>
+            <div style="display: flex; gap: 8px;">
+                <button onclick="resetWorkspace()" style="background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.75rem;" title="Switch or Reset Workspace">🔄 Switch</button>
+                <button onclick="location.reload()" style="background: none; border: none; cursor: pointer; color: var(--primary); font-size: 0.8rem; font-weight: 600;" title="Reload Page">♻️ Sync</button>
+            </div>
+        </div>
+        <div style="display: flex; gap: 12px; margin-bottom: 12px; font-size: 0.75rem;">
+            <span onclick="toggleAllSources(true)" style="color: var(--primary); cursor: pointer; font-weight: 600;">Select All</span>
+            <span style="color: var(--border);">|</span>
+            <span onclick="toggleAllSources(false)" style="color: var(--primary); cursor: pointer; font-weight: 600;">Deselect All</span>
+        </div>
+        
+        <button onclick="openAddSourceModal()" style="width: 100%; background: var(--bg-page); color: var(--primary); border: 1.5px dashed var(--primary); padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.85rem; margin-bottom: 16px; transition: all 0.2s;">
+            ➕ Add Temporary Source
+        </button>
+
+        <div id="indexed-files"></div>
+    </div>
+</div>
+
+<button onclick="toggleSidebar()" class="sidebar-toggle" id="floating-toggle" title="Toggle Sidebar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="9" y1="3" x2="9" y2="21"></line>
+        <path d="M15 9l-3 3 3 3"></path>
+    </svg>
+</button>
+
+<div class="main-content">
+    <div class="notebook-container">
+        <div class="chat-header">
+            <div style="display: flex; align-items: center; gap: 16px; transition: margin-left 0.3s;">
+                <div id="header-content" style="display: flex; align-items: center; gap: 16px; margin-left: 64px;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 1.1rem;" id="header-title">Project Intelligence</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted);" id="source-count">Trained on Local Documentation</div>
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <button id="theme-toggle" onclick="toggleTheme()" class="header-btn" title="Toggle Dark/Light Mode">
+                    🌓
+                </button>
+                <div class="status">System Ready</div>
+            </div>
+        </div>
+
+        <div class="messages" id="messages">
+            <div class="message ai">
+                Welcome to your project notebook. I have indexed all your documentation. 
+                <br><br>
+                What would you like to explore today? You can ask about:
+                <ul>
+                    <li>Deployment & System configuration</li>
+                    <li>SMTP & Postfix setup</li>
+                    <li>Clickhouse & Redis optimization</li>
+                    <li>JWT flows and security</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="input-wrapper">
+            <div id="typing" class="typing-indicator">Gemini is thinking...</div>
+            <div class="input-box">
+                <input type="text" id="user-input" placeholder="Ask a question about your docs..." onkeypress="if(event.key === 'Enter') sendMessage()">
+                <button class="send-btn" onclick="sendMessage()" id="send-btn">
+                    <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Source Modal -->
+<div id="add-source-modal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title">Add New Source</div>
+            <button onclick="closeAddSourceModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);">&times;</button>
+        </div>
+        
+        <div class="source-type-toggle">
+            <button id="type-file" class="type-btn active" onclick="switchSourceType('file')">Upload File</button>
+            <button id="type-text" class="type-btn" onclick="switchSourceType('text')">Paste Text</button>
+        </div>
+
+        <div id="file-input-area">
+            <div style="border: 2px dashed var(--border); padding: 30px; text-align: center; border-radius: 16px; cursor: pointer;" onclick="document.getElementById('file-upload').click()">
+                <div style="font-size: 2rem; margin-bottom: 10px;">📄</div>
+                <div style="font-weight: 600; font-size: 0.9rem;">Click to upload .md, .html, or .txt</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Max 2MB per file</div>
+                <input type="file" id="file-upload" style="display: none;" accept=".md,.html,.txt" onchange="handleFileUpload(event)">
+            </div>
+            <div id="file-name-preview" style="margin-top: 12px; font-size: 0.85rem; color: var(--primary); font-weight: 600; display: none;"></div>
+        </div>
+
+        <div id="text-input-area" style="display: none;">
+            <input type="text" id="custom-title" placeholder="Source Title (e.g. My Notes)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 12px; font-family: inherit;">
+            <textarea id="custom-text" placeholder="Paste your link content or notes here..." style="width: 100%; height: 200px; padding: 12px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; resize: none;"></textarea>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-outline" onclick="closeAddSourceModal()">Cancel</button>
+            <button id="add-source-btn" onclick="addCustomSource()" style="background: var(--primary); color: white; border: none; padding: 10px 24px; border-radius: 10px; cursor: pointer; font-weight: 600;">Add to Context</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Unified Documentation Context
+    // Global State & DOM References
+    let DOCS_CONTEXT = {}; // CURRENT active docs (filtered)
+    let RAW_INDEXED_DOCS = {}; // ALL docs loaded from disk
+    const fileContainer = document.querySelector('#indexed-files');
+    const sourceCountLabel = document.querySelector('#source-count');
+    let currentUploadData = null;
+    const QUOTA_STATUS = {}; 
+    const FOLDER_STATE = JSON.parse(localStorage.getItem('folder-collapsed') || '{}');
+    let CURRENT_API_URL = "";
+
+    // Theme Management
+    function initTheme() {
+        const savedTheme = localStorage.getItem('assistant-theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+    }
+
+    function toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('assistant-theme', next);
+        updateThemeIcon(next);
+    }
+
+    function updateThemeIcon(theme) {
+        const btn = document.getElementById('theme-toggle');
+        btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    }
+
+    initTheme();
+
+    // Sidebar Management
+    function initSidebar() {
+        const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+        if (isCollapsed) {
+            document.querySelector('.sidebar').classList.add('collapsed');
+            document.body.classList.add('sidebar-collapsed');
+        }
+    }
+
+    function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const isNowCollapsed = sidebar.classList.toggle('collapsed');
+        document.body.classList.toggle('sidebar-collapsed', isNowCollapsed);
+        localStorage.setItem('sidebar-collapsed', isNowCollapsed);
+    }
+
+    initSidebar();
+
+    CURRENT_API_URL = "";
+    // QUOTA_STATUS already handled at top
+
+    function updateModel() {
+        const model = document.getElementById('model-select').value;
+        localStorage.setItem('GEMINI_MODEL', model);
+        CURRENT_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+        console.log("Model updated to:", model);
+    }
+
+    // Project Branding Logic
+    function initBranding() {
+        if (typeof PROJECT_CONFIG !== 'undefined') {
+            const name = PROJECT_CONFIG.name || 'Project';
+            document.title = `${name} | AI Document Notebook`;
+            document.getElementById('header-title').textContent = `AI Document Notebook`;
+            
+            // Welcome Message logic is now handled based on connection state
+            updateWelcomeMessage(name);
+        }
+    }
+
+    function updateWelcomeMessage(projectName) {
+        const welcomeMsg = document.querySelector('.messages .ai');
+        if (!welcomeMsg) return;
+
+        if (localStorage.getItem('workspace-connected') === 'true') {
+            welcomeMsg.innerHTML = `Welcome back to your <b>AI Document Notebook</b>. I have loaded the documentation for the <b>${projectName}</b> workspace. 
+            <br><br>
+            What would you like to explore today?`;
+        } else {
+            welcomeMsg.innerHTML = `Hello! I am your <b>AI Document Notebook</b>. 
+            <br><br>
+            Your workspace is currently empty. You can <b>Load Local Workspace</b> (the parent directory) or add your own temporary sources using the sidebar.`;
+        }
+    }
+
+    function connectProject() {
+        if (typeof INDEXED_DOCS !== 'undefined') {
+            Object.assign(DOCS_CONTEXT, INDEXED_DOCS);
+            localStorage.setItem('workspace-connected', 'true');
+            const name = (typeof PROJECT_CONFIG !== 'undefined') ? PROJECT_CONFIG.name : 'Project';
+            updateWelcomeMessage(name);
+            renderSources();
+        } else {
+            document.getElementById('dir-picker').click();
+        }
+    }
+
+    async function handleDirSelect(event) {
+        const files = Array.from(event.target.files);
+        if (files.length === 0) return;
+
+        // Reset current context
+        for (let key in DOCS_CONTEXT) {
+            if (!key.startsWith('CUSTOM_')) delete DOCS_CONTEXT[key];
+        }
+
+        const newDocs = {};
+        const projectName = files[0].webkitRelativePath.split('/')[0] || "Local Workspace";
+        
+        let processedCount = 0;
+        const totalToProcess = files.filter(f => f.name.endsWith('.md') || f.name.endsWith('.html')).length;
+
+        if (totalToProcess === 0) {
+            alert("No documentation files (.md or .html) found in this folder.");
+            return;
+        }
+
+        for (const file of files) {
+            // Extension filtering
+            const fileName = file.name.toLowerCase();
+            const excludeExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.pdf', '.zip', '.exe', '.gz', '.tar', '.mp4'];
+            if (excludeExtensions.some(ext => fileName.endsWith(ext))) continue;
+
+            const isHtml = fileName.endsWith('.html');
+            
+            // Skip docs-bot-specific files
+            const excludeFiles = ['index.html', 'docs-bot.html', 'gemini-api-guide.html', 'docs-context.js'];
+            if (excludeFiles.includes(file.name)) continue;
+
+            try {
+                const text = await file.text();
+                let content = text;
+
+                if (isHtml) {
+                    content = content
+                        .replace(/<script[\s\S]*?<\/script>/gi, '')
+                        .replace(/<style[\s\S]*?<\/style>/gi, '')
+                        .replace(/<[^>]+>/g, ' ');
+                }
+
+                const cleanContent = content.replace(/\s+/g, ' ').trim();
+                const relativePath = file.webkitRelativePath.split('/').slice(1).join('/');
+                
+                if (relativePath) {
+                    newDocs[relativePath] = cleanContent;
+                } else {
+                    newDocs[file.name] = cleanContent;
+                }
+                processedCount++;
+            } catch (e) {
+                console.warn(`Could not read ${file.name} as text. Skipping binary?`);
+            }
+        }
+
+        RAW_INDEXED_DOCS = newDocs; // Persist raw data
+        localStorage.setItem('workspace-connected', 'true');
+        localStorage.setItem('raw-indexed-docs', JSON.stringify(newDocs));
+        localStorage.setItem('dynamic-project-name', projectName);
+        
+        applyFilters(); 
+        updateWelcomeMessage(projectName);
+    }
+
+    let filterTimeout;
+    function debounceFilter() {
+        clearTimeout(filterTimeout);
+        filterTimeout = setTimeout(applyFilters, 300);
+    }
+
+    function applyFilters() {
+        const includePattern = document.getElementById('filter-include').value.trim();
+        const excludePattern = document.getElementById('filter-exclude').value.trim();
+        
+        localStorage.setItem('filter-include', includePattern);
+        localStorage.setItem('filter-exclude', excludePattern);
+
+        const filtered = {};
+        const includes = includePattern ? includePattern.split(',').map(p => p.trim().replace(/\*/g, '.*')) : null;
+        const excludes = excludePattern ? excludePattern.split(',').map(p => p.trim().replace(/\*/g, '.*')) : null;
+
+        Object.keys(RAW_INDEXED_DOCS).forEach(path => {
+            let keep = true;
+
+            if (includes) {
+                keep = includes.some(pattern => new RegExp(`^${pattern}$`, 'i').test(path) || path.includes(includePattern.replace(/\*/g, '')));
+            }
+            if (excludes && keep) {
+                keep = !excludes.some(pattern => new RegExp(`^${pattern}$`, 'i').test(path) || path.includes(excludePattern.replace(/\*/g, '')));
+            }
+
+            if (keep) filtered[path] = RAW_INDEXED_DOCS[path];
+        });
+
+        DOCS_CONTEXT = { ...filtered };
+        // Merge custom sources
+        const customSources = JSON.parse(localStorage.getItem('CUSTOM_SOURCES') || '{}');
+        Object.assign(DOCS_CONTEXT, customSources);
+
+        window.INDEXED_DOCS = filtered; 
+        renderSources();
+    }
+    
+    // Load state on start
+    function initApp() {
+        const savedKey = localStorage.getItem('GEMINI_API_KEY');
+        if(savedKey) {
+            document.getElementById('api-key').value = savedKey;
+            document.getElementById('key-input-area').style.display = 'none';
+            document.querySelector('.status').textContent = 'Key Active';
+        }
+
+        const savedModel = localStorage.getItem('GEMINI_MODEL');
+        if(savedModel) {
+            document.getElementById('model-select').value = savedModel;
+        }
+
+        // Restore filters
+        const savedInclude = localStorage.getItem('filter-include') || '';
+        const savedExclude = localStorage.getItem('filter-exclude') || '';
+        document.getElementById('filter-include').value = savedInclude;
+        document.getElementById('filter-exclude').value = savedExclude;
+
+        // Handle dynamic docs persistence
+        const rawDocs = JSON.parse(localStorage.getItem('raw-indexed-docs') || 'null');
+        const dynamicName = localStorage.getItem('dynamic-project-name');
+        
+        if (rawDocs) {
+            RAW_INDEXED_DOCS = rawDocs;
+            applyFilters();
+            if (dynamicName) updateWelcomeMessage(dynamicName);
+        } else if (localStorage.getItem('workspace-connected') === 'true' && typeof INDEXED_DOCS !== 'undefined') {
+            // Static fallback
+            RAW_INDEXED_DOCS = { ...INDEXED_DOCS };
+            applyFilters();
+        }
+    }
+
+    // (initApp call moved to end of script)
+
+    function resetKey() {
+        localStorage.removeItem('GEMINI_API_KEY');
+        document.getElementById('key-input-area').style.display = 'block';
+        document.getElementById('api-key').value = '';
+        document.querySelector('.status').textContent = 'Key Required';
+    }
+
+    function resetWorkspace() {
+        if (confirm("Disconnect from current workspace and switch? \n(This will hide the current files and let you pick a new folder)")) {
+            localStorage.removeItem('workspace-connected');
+            localStorage.removeItem('raw-indexed-docs');
+            localStorage.removeItem('dynamic-project-name');
+            localStorage.removeItem('filter-include');
+            localStorage.removeItem('filter-exclude');
+            RAW_INDEXED_DOCS = {};
+            DOCS_CONTEXT = {};
+            window.INDEXED_DOCS = undefined;
+            
+            document.getElementById('filter-include').value = '';
+            document.getElementById('filter-exclude').value = '';
+
+            updateWelcomeMessage("Project");
+            renderSources();
+        }
+    }
+
+    // List indexed files with Notebook style and Checkboxes
+    // (Consolidated renderSources moved below)
+
+    function updateSourceCount() {
+        const checked = document.querySelectorAll('#indexed-files input:checked').length;
+        const total = Object.keys(DOCS_CONTEXT).length;
+        sourceCountLabel.textContent = `Using ${checked} of ${total} sources as context`;
+    }
+
+    function toggleAllSources(select) {
+        document.querySelectorAll('#indexed-files input').forEach(cb => {
+            cb.checked = select;
+        });
+        updateSourceCount();
+    }
+
+
+    function saveKey() {
+        const key = document.getElementById('api-key').value;
+        if (!key) return;
+        localStorage.setItem('GEMINI_API_KEY', key);
+        document.getElementById('key-input-area').style.display = 'none';
+        document.querySelector('.status').textContent = 'Key Active';
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('user-input');
+        const btn = document.getElementById('send-btn');
+        const typing = document.getElementById('typing');
+        const text = input.value.trim();
+        const apiKey = localStorage.getItem('GEMINI_API_KEY');
+        const selectedModel = document.getElementById('model-select').value;
+
+        if (!text) return;
+        if (!apiKey) { alert('Please enter an API Key in the sidebar first!'); return; }
+        
+        // Safety: ensure URL is set
+        if (!CURRENT_API_URL) updateModel();
+
+        // Filter Context based on checkboxes
+        const selectedFiles = Array.from(document.querySelectorAll('#indexed-files input:checked')).map(cb => cb.dataset.file);
+        const filteredContext = {};
+        selectedFiles.forEach(file => {
+            filteredContext[file] = DOCS_CONTEXT[file];
+        });
+
+            if (selectedFiles.length === 0) {
+                alert('Please select at least one source!');
+                return;
+            }
+
+            addMessage(text, 'user');
+            input.value = '';
+            btn.disabled = true;
+            typing.style.display = 'block';
+
+            // Merge Custom Sources from Storage if not already in DOCS_CONTEXT
+            const customSources = JSON.parse(localStorage.getItem('CUSTOM_SOURCES') || '{}');
+            Object.assign(filteredContext, customSources);
+
+        try {
+            const contextText = JSON.stringify(filteredContext);
+            const projectName = (typeof PROJECT_CONFIG !== 'undefined' && PROJECT_CONFIG.name) ? PROJECT_CONFIG.name : 'this';
+            const systemPrompt = `You are a technical assistant for the ${projectName} project, acting as Scribe (an intelligent documentation bot). 
+            Use the following documentation context to answer the user's question. 
+            If the answer is not in the context, say "I don't have that information in my documentation."
+            Always be concise and provide code snippets if available.
+            Format your response in professional markdown.
+            
+            CONTEXT: ${contextText}`;
+
+            const response = await fetch(`${CURRENT_API_URL}?key=${apiKey}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: `${systemPrompt}\n\nUSER QUESTION: ${text}` }] }]
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                let errorData = {};
+                try { errorData = JSON.parse(errorText); } catch(e) {}
+                
+                let errorMsg = `**API Error (${response.status}):** ${errorData.error ? errorData.error.message : errorText || 'Empty response from API'}`;
+                
+                if (response.status === 429) {
+                    QUOTA_STATUS[selectedModel] = Date.now() + (5 * 60 * 1000); // 5 min cooldown
+                    errorMsg += "\n\n*Tip: You've hit the quota for this model. Switching to a different model in the dropdown is recommended.*";
+                    refreshModelUI();
+                }
+                
+                addMessage(errorMsg, 'ai');
+                return;
+            }
+
+            const responseText = await response.text();
+            if (!responseText) {
+                addMessage("**Connection Error:** The API returned an empty success response. This can happen if the context is too large or the connection was interrupted.", 'ai');
+                return;
+            }
+
+            const data = JSON.parse(responseText);
+
+            if (!data.candidates || !data.candidates[0].content) {
+                addMessage("Gemini returned an empty response. This usually happens if the safety filters block the content.", 'ai');
+                return;
+            }
+
+            const aiResponse = data.candidates[0].content.parts[0].text;
+            addMessage(aiResponse, 'ai');
+        } catch (error) {
+            console.error("Gemini Error:", error);
+            addMessage(`**Connection Error:** ${error.message}. Please check your network and API key.`, 'ai');
+        } finally {
+            btn.disabled = false;
+            typing.style.display = 'none';
+        }
+    }
+
+    function refreshModelUI() {
+        const dropdown = document.getElementById('model-select');
+        const now = Date.now();
+        
+        Array.from(dropdown.options).forEach(opt => {
+            const model = opt.value;
+            const isExceeded = QUOTA_STATUS[model] && QUOTA_STATUS[model] > now;
+            
+            // Clean up old markers
+            let baseName = opt.textContent.replace(' ⚠️ (Quota Exceeded)', '');
+            
+            if (isExceeded) {
+                opt.textContent = `${baseName} ⚠️ (Quota Exceeded)`;
+                opt.style.color = '#d93025';
+            } else {
+                opt.textContent = baseName;
+                opt.style.color = '';
+            }
+        });
+    }
+
+    async function checkModels() {
+        const apiKey = localStorage.getItem('GEMINI_API_KEY');
+        if (!apiKey) { alert('Please enter an API Key first!'); return; }
+        
+        try {
+            const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+            const data = await resp.json();
+            if (data.error) {
+                alert(`Error: ${data.error.message}`);
+                return;
+            }
+            
+            const dropdown = document.getElementById('model-select');
+            const currentVal = dropdown.value;
+            dropdown.innerHTML = '';
+            
+            data.models.forEach(m => {
+                if(m.supportedGenerationMethods.includes('generateContent')) {
+                    const name = m.name.replace('models/', '');
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    dropdown.appendChild(option);
+                }
+            });
+            
+            // Restore previous choice if still available
+            if([...dropdown.options].some(o => o.value === currentVal)) {
+                dropdown.value = currentVal;
+            }
+            
+            updateModel();
+            refreshModelUI();
+            alert(`✅ Model list updated successfully with ${dropdown.options.length} models.`);
+        } catch (e) {
+            alert(`Failed to list models: ${e.message}`);
+        }
+    }
+
+    function addMessage(text, side) {
+        const container = document.getElementById('messages');
+        const div = document.createElement('div');
+        div.className = `message ${side}`;
+        div.innerHTML = marked.parse(text);
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    // Dynamic Source Logic
+    // (Variables moved to top)
+
+    function openAddSourceModal() {
+        document.getElementById('add-source-modal').style.display = 'flex';
+    }
+
+    function closeAddSourceModal() {
+        document.getElementById('add-source-modal').style.display = 'none';
+        resetModal();
+    }
+
+    function resetModal() {
+        document.getElementById('custom-title').value = '';
+        document.getElementById('custom-text').value = '';
+        document.getElementById('file-upload').value = '';
+        document.getElementById('file-name-preview').style.display = 'none';
+        currentUploadData = null;
+    }
+
+    function switchSourceType(type) {
+        document.getElementById('type-file').classList.toggle('active', type === 'file');
+        document.getElementById('type-text').classList.toggle('active', type === 'text');
+        document.getElementById('file-input-area').style.display = type === 'file' ? 'block' : 'none';
+        document.getElementById('text-input-area').style.display = type === 'text' ? 'block' : 'none';
+    }
+
+    function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            currentUploadData = {
+                title: file.name,
+                content: e.target.result
+            };
+            document.getElementById('file-name-preview').textContent = `Selected: ${file.name}`;
+            document.getElementById('file-name-preview').style.display = 'block';
+        };
+        reader.readAsText(file);
+    }
+
+    function addCustomSource() {
+        let title, content;
+        const isFile = document.getElementById('type-file').classList.contains('active');
+
+        if (isFile) {
+            if (!currentUploadData) { alert('Please select a file first.'); return; }
+            title = currentUploadData.title;
+            content = currentUploadData.content;
+        } else {
+            title = document.getElementById('custom-title').value.trim() || 'Pasted Text';
+            content = document.getElementById('custom-text').value.trim();
+            if (!content) { alert('Please paste some text.'); return; }
+        }
+
+        const customId = `CUSTOM_${Date.now()}`;
+        const newSource = { [customId]: content, title: title }; // Store title as extra info
+        
+        // Save to LocalStorage
+        const existing = JSON.parse(localStorage.getItem('CUSTOM_SOURCES') || '{}');
+        existing[customId] = content;
+        // We actually need to store the mapping of ID to {content, title} for the UI
+        const meta = JSON.parse(localStorage.getItem('CUSTOM_SOURCES_META') || '{}');
+        meta[customId] = title;
+        
+        localStorage.setItem('CUSTOM_SOURCES', JSON.stringify(existing));
+        localStorage.setItem('CUSTOM_SOURCES_META', JSON.stringify(meta));
+
+        // Inject into runtime context
+        DOCS_CONTEXT[customId] = content;
+        
+        renderSources();
+        closeAddSourceModal();
+    }
+
+    function loadCustomSources() {
+        const existing = JSON.parse(localStorage.getItem('CUSTOM_SOURCES') || '{}');
+        Object.assign(DOCS_CONTEXT, existing);
+        renderSources();
+    }
+
+    // (Variables moved to top)
+
+    function toggleFolder(folderPath, element) {
+        const isCollapsed = element.classList.toggle('collapsed');
+        FOLDER_STATE[folderPath] = isCollapsed;
+        localStorage.setItem('folder-collapsed', JSON.stringify(FOLDER_STATE));
+    }
+
+    function renderSources() {
+        const customMeta = JSON.parse(localStorage.getItem('CUSTOM_SOURCES_META') || '{}');
+        if (!fileContainer) return;
+        fileContainer.innerHTML = '';
+
+        const hasCustom = Object.keys(customMeta).length > 0;
+        const hasProject = localStorage.getItem('workspace-connected') === 'true';
+
+        if (!hasProject && !hasCustom) {
+            const name = (typeof PROJECT_CONFIG !== 'undefined') ? PROJECT_CONFIG.name : 'Project';
+            fileContainer.innerHTML = `
+                <div class="workspace-empty">
+                    <div class="empty-icon">📂</div>
+                    <div class="empty-title">Clean Slate</div>
+                    <div class="empty-desc">Your notebook workspace is currently empty.</div>
+                    <button class="connect-btn" onclick="document.getElementById('dir-picker').click()">
+                        <span>📂</span> Browse & Index Folder
+                    </button>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">(Select the <b>parent folder</b> to load all docs)</div>
+                    
+                    <div style="margin: 10px 0; border-top: 1px solid var(--border); padding-top: 10px; width: 100%;"></div>
+                    
+                    <button class="secondary-action" onclick="openAddSourceModal()" style="margin-bottom: 8px;">
+                        ➕ Add Temporary Source
+                    </button>
+                    
+                </div>
+            `;
+            updateSourceCount();
+            return;
+        }
+
+        // Build Tree structure
+        const tree = { folders: {}, files: [] };
+
+        // 1. Add normal indexed files if connected
+        const docsToRender = window.INDEXED_DOCS || (typeof INDEXED_DOCS !== 'undefined' ? INDEXED_DOCS : {});
+        if (hasProject) {
+            Object.keys(docsToRender).sort().forEach(path => {
+                const parts = path.split('/');
+                let current = tree;
+                
+                parts.forEach((part, index) => {
+                    if (index === parts.length - 1) {
+                        current.files.push({ name: part, fullPath: path });
+                    } else {
+                        if (!current.folders[part]) {
+                            current.folders[part] = { folders: {}, files: [] };
+                        }
+                        current = current.folders[part];
+                    }
+                });
+            });
+        }
+
+        // 2. Add custom sources under a virtual folder
+        const customSources = Object.keys(customMeta);
+        if (customSources.length > 0) {
+            tree.folders['User Uploads'] = { folders: {}, files: [] };
+            customSources.forEach(id => {
+                tree.folders['User Uploads'].files.push({ 
+                    name: customMeta[id], 
+                    fullPath: id, 
+                    isCustom: true 
+                });
+            });
+        }
+
+        function createTreeUI(node, container, pathPrefix = '') {
+            // Folders first
+            Object.keys(node.folders).sort().forEach(folderName => {
+                const fullFolderPath = pathPrefix + folderName;
+                const isCollapsed = FOLDER_STATE[fullFolderPath] || false;
+
+                const folderDiv = document.createElement('div');
+                folderDiv.className = `source-folder ${isCollapsed ? 'collapsed' : ''}`;
+                folderDiv.innerHTML = `
+                    <span class="chevron">▾</span>
+                    <span class="folder-icon">📁</span>
+                    <span>${folderName}</span>
+                `;
+                folderDiv.onclick = () => toggleFolder(fullFolderPath, folderDiv);
+                container.appendChild(folderDiv);
+
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'folder-content';
+                container.appendChild(contentDiv);
+
+                createTreeUI(node.folders[folderName], contentDiv, fullFolderPath + '/');
+            });
+
+            // Then files
+            node.files.forEach(file => {
+                const div = document.createElement('div');
+                div.className = 'source-item';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = true;
+                checkbox.dataset.file = file.fullPath;
+                checkbox.onchange = updateSourceCount;
+
+                const label = document.createElement('label');
+                label.style.display = 'flex';
+                label.style.alignItems = 'center';
+                label.innerHTML = `${file.name} ${file.isCustom ? '<span class="source-tag">Custom</span>' : ''}`;
+                label.onclick = (e) => { 
+                    if(e.target !== checkbox) {
+                        checkbox.checked = !checkbox.checked; 
+                        updateSourceCount(); 
+                    }
+                };
+
+                div.appendChild(checkbox);
+                div.appendChild(label);
+
+                if (file.isCustom) {
+                    const delBtn = document.createElement('span');
+                    delBtn.innerHTML = '&times;';
+                    delBtn.className = 'delete-btn';
+                    delBtn.style.color = '#d93025';
+                    delBtn.style.cursor = 'pointer';
+                    delBtn.style.marginLeft = 'auto';
+                    delBtn.style.fontSize = '1.2rem';
+                    delBtn.style.padding = '0 6px';
+                    delBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        removeCustomSource(file.fullPath);
+                    };
+                    div.appendChild(delBtn);
+                }
+
+                container.appendChild(div);
+            });
+        }
+
+        createTreeUI(tree, fileContainer);
+        updateSourceCount();
+    }
+
+    function removeCustomSource(id) {
+        const existing = JSON.parse(localStorage.getItem('CUSTOM_SOURCES') || '{}');
+        const meta = JSON.parse(localStorage.getItem('CUSTOM_SOURCES_META') || '{}');
+        delete existing[id];
+        delete meta[id];
+        localStorage.setItem('CUSTOM_SOURCES', JSON.stringify(existing));
+        localStorage.setItem('CUSTOM_SOURCES_META', JSON.stringify(meta));
+        delete DOCS_CONTEXT[id];
+        renderSources();
+    }
+
+    function updateSourceCount() {
+        const checked = document.querySelectorAll('#indexed-files input:checked').length;
+        const name = (typeof PROJECT_CONFIG !== 'undefined') ? PROJECT_CONFIG.name : 'Project';
+        
+        if (localStorage.getItem('workspace-connected') === 'true') {
+            sourceCountLabel.textContent = `Using ${checked} sources from ${name}`;
+        } else {
+            sourceCountLabel.textContent = `Workspace: ${checked} custom sources active`;
+        }
+    }
+
+    // Initial Load
+    function init() {
+        const existing = JSON.parse(localStorage.getItem('CUSTOM_SOURCES') || '{}');
+        Object.assign(DOCS_CONTEXT, existing);
+        
+        if (localStorage.getItem('workspace-connected') === 'true' && typeof INDEXED_DOCS !== 'undefined') {
+            Object.assign(DOCS_CONTEXT, INDEXED_DOCS);
+        }
+        
+        initTheme();
+        initBranding();
+        renderSources();
+    }
+
+    init();
+</script>
+
+</body>
+</html>

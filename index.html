@@ -96,17 +96,30 @@
 
         .sidebar h2::before { content: "📚"; }
 
+        .sidebar-collapsible {
+            margin-bottom: 24px;
+        }
+
+        .sidebar-collapsible summary {
+            font-size: 0.90rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            cursor: pointer;
+            user-select: none;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
         .api-key-section {
             background: var(--bg-accent);
             padding: 16px;
             border-radius: 12px;
             border: 1px solid var(--border-accent);
-            margin-bottom: 24px;
         }
 
         .source-list {
-            flex: 1;
-            overflow-y: auto;
+            display: block;
         }
 
         .source-list h3 {
@@ -774,65 +787,74 @@
     <!-- Hidden input for directory selection -->
     <input type="file" id="dir-picker" webkitdirectory directory style="display:none" onchange="handleDirSelect(event)">
     
-    <div class="api-key-section" id="api-section">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <div style="font-weight: 600; font-size: 0.9rem;">API Settings</div>
-            <button onclick="resetKey()" style="background:none; border:none; color:var(--primary); font-size:0.7rem; cursor:pointer; text-decoration:underline;">Reset</button>
-        </div>
-        <div id="key-input-area">
-            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
-                <a href="#" onclick="openApiGuideModal(); return false;" style="color: var(--primary); text-decoration: none; font-weight: 600;">How to get an API key?</a>
+    <!-- API Settings Section -->
+    <details class="sidebar-collapsible" open>
+        <summary>API Settings</summary>
+        <div class="api-key-section" id="api-section">
+            <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 8px;">
+                <button onclick="resetKey()" style="background:none; border:none; color:var(--primary); font-size:0.7rem; cursor:pointer; text-decoration:underline;">Reset</button>
             </div>
-            <input type="password" id="api-key" placeholder="Gemini API Key" style="width: 100%; border-radius: 8px; border: 1px solid var(--border); padding: 8px; margin-bottom: 10px; box-sizing: border-box;">
-            <button onclick="saveKey()" style="width: 100%; background: var(--primary); color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 600;">Activate</button>
-        </div>
-        
-        <div style="margin-top: 16px;">
-            <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Active Model:</label>
-            <select id="model-select" onchange="updateModel()" style="width: 100%; border-radius: 8px; border: 1px solid var(--border); padding: 8px; margin-top: 4px; font-family: inherit; font-size: 0.85rem; background: white;">
-                <option value="gemini-2.5-flash">gemini-2.5-flash</option>
-                <option value="gemini-2.0-flash">gemini-2.0-flash</option>
-                <option value="gemini-1.5-flash">gemini-1.5-flash</option>
-                <option value="gemini-1.5-pro">gemini-1.5-pro</option>
-                <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite</option>
-            </select>
-        </div>
+            <div id="key-input-area">
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
+                    <a href="#" onclick="openApiGuideModal(); return false;" style="color: var(--primary); text-decoration: none; font-weight: 600;">How to get an API key?</a>
+                </div>
+                <input type="password" id="api-key" placeholder="Gemini API Key" style="width: 100%; border-radius: 8px; border: 1px solid var(--border); padding: 8px; margin-bottom: 10px; box-sizing: border-box;">
+                <button onclick="saveKey()" style="width: 100%; background: var(--primary); color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 600;">Activate</button>
+            </div>
+            
+            <div style="margin-top: 16px;">
+                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Active Model:</label>
+                <select id="model-select" onchange="updateModel()" style="width: 100%; border-radius: 8px; border: 1px solid var(--border); padding: 8px; margin-top: 4px; font-family: inherit; font-size: 0.85rem; background: white;">
+                    <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+                    <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+                    <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+                    <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+                    <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite</option>
+                </select>
+            </div>
 
-        <button onclick="checkModels()" style="width: 100%; background: none; color: var(--text-muted); border: 1px solid var(--border); padding: 6px; border-radius: 8px; cursor: pointer; font-size: 0.75rem; margin-top: 12px;">Update Model List</button>
-    </div>
-
-    <!-- Filter Section -->
-    <div class="filter-section">
-        <div class="filter-group">
-            <label>Files to Include</label>
-            <input type="text" id="filter-include" class="filter-input" placeholder="e.g. *.js, docs/**" oninput="debounceFilter()">
+            <button onclick="checkModels()" style="width: 100%; background: none; color: var(--text-muted); border: 1px solid var(--border); padding: 6px; border-radius: 8px; cursor: pointer; font-size: 0.75rem; margin-top: 12px;">Update Model List</button>
         </div>
-        <div class="filter-group" style="margin-bottom: 0;">
-            <label>Files to Exclude</label>
-            <input type="text" id="filter-exclude" class="filter-input" placeholder="e.g. node_modules/**, *.log" oninput="debounceFilter()">
-        </div>
-    </div>
+    </details>
 
-    <div class="source-list">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <h3>Sources Indexed</h3>
-            <div style="display: flex; gap: 8px;">
-                <button onclick="resetWorkspace()" style="background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.75rem;" title="Switch or Reset Workspace">🔄 Switch</button>
-                <button onclick="location.reload()" style="background: none; border: none; cursor: pointer; color: var(--primary); font-size: 0.8rem; font-weight: 600;" title="Reload Page">♻️ Sync</button>
+    <!-- Source Section -->
+    <details class="sidebar-collapsible" open>
+        <summary>Source</summary>
+        <div class="source-list">
+            <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 8px;">
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="resetWorkspace()" style="background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.75rem;" title="Switch or Reset Workspace">🔄 Switch</button>
+                    <button onclick="location.reload()" style="background: none; border: none; cursor: pointer; color: var(--primary); font-size: 0.8rem; font-weight: 600;" title="Reload Page">♻️ Sync</button>
+                </div>
+            </div>
+            <div style="display: flex; gap: 12px; margin-bottom: 12px; font-size: 0.75rem;">
+                <span onclick="toggleAllSources(true)" style="color: var(--primary); cursor: pointer; font-weight: 600;">Select All</span>
+                <span style="color: var(--border);">|</span>
+                <span onclick="toggleAllSources(false)" style="color: var(--primary); cursor: pointer; font-weight: 600;">Deselect All</span>
+            </div>
+            
+            <button onclick="openAddSourceModal()" style="width: 100%; background: var(--bg-page); color: var(--primary); border: 1.5px dashed var(--primary); padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.85rem; margin-bottom: 16px; transition: all 0.2s;">
+                ➕ Add Temporary Source
+            </button>
+
+            <div id="indexed-files"></div>
+        </div>
+    </details>
+
+    <!-- Files to Include Section -->
+    <details class="sidebar-collapsible">
+        <summary>Files to Include</summary>
+        <div class="filter-section">
+            <div class="filter-group">
+                <label>Files to Include</label>
+                <input type="text" id="filter-include" class="filter-input" placeholder="e.g. *.js, docs/**" oninput="debounceFilter()">
+            </div>
+            <div class="filter-group" style="margin-bottom: 0;">
+                <label>Files to Exclude</label>
+                <input type="text" id="filter-exclude" class="filter-input" placeholder="e.g. node_modules/**, *.log" oninput="debounceFilter()">
             </div>
         </div>
-        <div style="display: flex; gap: 12px; margin-bottom: 12px; font-size: 0.75rem;">
-            <span onclick="toggleAllSources(true)" style="color: var(--primary); cursor: pointer; font-weight: 600;">Select All</span>
-            <span style="color: var(--border);">|</span>
-            <span onclick="toggleAllSources(false)" style="color: var(--primary); cursor: pointer; font-weight: 600;">Deselect All</span>
-        </div>
-        
-        <button onclick="openAddSourceModal()" style="width: 100%; background: var(--bg-page); color: var(--primary); border: 1.5px dashed var(--primary); padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.85rem; margin-bottom: 16px; transition: all 0.2s;">
-            ➕ Add Temporary Source
-        </button>
-
-        <div id="indexed-files"></div>
-    </div>
+    </details>
 
     <!-- Privacy Notice -->
     <div style="margin-top: auto; padding: 16px; background: rgba(0,0,0,0.03); border-radius: 12px; font-size: 0.8rem; color: var(--text-muted); text-align: center; border: 1px solid var(--border);">
@@ -1222,6 +1244,8 @@
             // Static fallback
             RAW_INDEXED_DOCS = { ...INDEXED_DOCS };
             applyFilters();
+        } else {
+            applyFilters();
         }
     }
 
@@ -1309,16 +1333,24 @@
             btn.disabled = true;
             typing.style.display = 'block';
 
-            // Merge Custom Sources from Storage if not already in DOCS_CONTEXT
-            const customSources = JSON.parse(localStorage.getItem('CUSTOM_SOURCES') || '{}');
-            Object.assign(filteredContext, customSources);
+            // Map keys to readable titles to ensure Gemini parses them correctly (especially for Pasted Text)
+            const namedContext = {};
+            const customMeta = JSON.parse(localStorage.getItem('CUSTOM_SOURCES_META') || '{}');
+            for (const key in filteredContext) {
+                if (key.startsWith('CUSTOM_') && customMeta[key]) {
+                    namedContext[customMeta[key]] = filteredContext[key];
+                } else {
+                    namedContext[key] = filteredContext[key];
+                }
+            }
 
         try {
-            const contextText = JSON.stringify(filteredContext);
+            const contextText = JSON.stringify(namedContext);
             const projectName = (typeof PROJECT_CONFIG !== 'undefined' && PROJECT_CONFIG.name) ? PROJECT_CONFIG.name : 'this';
             const systemPrompt = `You are a technical assistant for the ${projectName} project, acting as Scribe (an intelligent documentation bot). 
             Use the following documentation context to answer the user's question. 
-            If the answer is not in the context, say "I don't have that information in my documentation."
+            If the user asks a general question, greeting, or conversational message, you may respond naturally.
+            However, for domain-specific or factual questions whose answer is not in the context, say "I don't have that information in my documentation."
             Always be concise and provide code snippets if available.
             Format your response in professional markdown.
             
@@ -1757,16 +1789,9 @@
 
     // Initial Load
     function init() {
-        const existing = JSON.parse(localStorage.getItem('CUSTOM_SOURCES') || '{}');
-        Object.assign(DOCS_CONTEXT, existing);
-        
-        if (localStorage.getItem('workspace-connected') === 'true' && typeof INDEXED_DOCS !== 'undefined') {
-            Object.assign(DOCS_CONTEXT, INDEXED_DOCS);
-        }
-        
         initTheme();
         initBranding();
-        renderSources();
+        initApp();
     }
 
     init();

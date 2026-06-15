@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+
+# Environment secrets — DO NOT COMMIT
+.env
+
+# Local Node binary (precompiled tarball)
+bin/node/
+
+# Query analytics logs — keep local, do not commit
+scribe-api/logs/
+
+# OS artifacts
+.DS_Store

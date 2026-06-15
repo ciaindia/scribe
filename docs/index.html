@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scribe Documentation</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Sidebar Menu -->
+  <aside class="sidebar">
+    <div class="brand-section">
+      <svg class="brand-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20h9"></path>
+        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+      </svg>
+      <span class="brand-title">Scribe</span>
+      <span class="brand-badge">v1.2</span>
+    </div>
+
+    <div class="search-box">
+      <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" class="search-input" id="menu-search" placeholder="Quick filter modules..." onkeyup="filterMenu()">
+    </div>
+
+    <nav>
+      <div class="nav-category">Getting Started</div>
+      <ul class="nav-menu">
+        <li><a class="nav-item active" onclick="switchSection('intro')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
+          Introduction
+        </a></li>
+        <li><a class="nav-item" onclick="switchSection('setup')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+          Setup Guide
+        </a></li>
+      </ul>
+
+      <div class="nav-category">Integration</div>
+      <ul class="nav-menu">
+        <li><a class="nav-item" onclick="switchSection('frontend')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+          React Widget
+        </a></li>
+        <li><a class="nav-item" onclick="switchSection('docs-format')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          Document Schema
+        </a></li>
+      </ul>
+
+      <div class="nav-category">Reference</div>
+      <ul class="nav-menu">
+        <li><a class="nav-item" onclick="switchSection('api')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+          API Endpoints
+        </a></li>
+        <li><a class="nav-item" onclick="switchSection('cache')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+          Session Cache
+        </a></li>
+        <li><a class="nav-item" onclick="switchSection('nlp')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          NLP & Stemming
+        </a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    
+    <!-- Section: Introduction -->
+    <section id="intro" class="doc-section active">
+      <h1>Introduction</h1>
+      <p><strong>Scribe</strong> is a lightweight, local document navigation assistant widget. It acts as an interactive chatbot helper inside product admin consoles, reading local product documentation files and guiding users directly to their configuration screens using deep links.</p>
+      
+      <h2>Core Features</h2>
+      <ul>
+        <li><strong>Local Markdown Indexing</strong>: Crawls directories recursively and parses files using front-matter yaml metadata. Excludes database dependencies or external APIs.</li>
+        <li><strong>TF-IDF & Stemming Engine</strong>: Implements basic Term Frequency-Inverse Document Frequency (TF-IDF) scoring coupled with <code>natural</code>'s PorterStemmer to align singular, plural, and related verb search terms accurately.</li>
+        <li><strong>Session Cache (Context Window)</strong>: Before calling the search engine, checks the last 10 Redis session messages for an exact previous answer. Cache hits skip the indexer entirely, returning the cached answer instantly. Cache is automatically invalidated on every reindex.</li>
+        <li><strong>Persistent Chat History</strong>: Remembers previous conversations across page reloads using permanent <code>localStorage</code> session markers. Last 10 messages are restored from Redis on widget mount.</li>
+        <li><strong>Prompt History Navigation</strong>: Supports Unix terminal-style <code>Up/Down arrow key</code> cycling through previously sent questions inside the input box.</li>
+        <li><strong>Zero Authentication Overhead</strong>: Public unauthenticated endpoints let developers integrate search boxes and widgets into local dev and staging environments seamlessly.</li>
+      </ul>
+
+      <div class="callout info">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-top: 2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        <div>
+          <div class="callout-title">No LLM Dependencies</div>
+          <p>Scribe is 100% deterministic and runs locally. It does not require Ollama, Python virtual environments, or external LLM connections, making it fast and lightweight.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section: Setup Guide -->
+    <section id="setup" class="doc-section">
+      <h1>Setup Guide</h1>
+      <p>Follow these instructions to start the Scribe backend API and frontend dev instances in your workspace.</p>
+
+      <h2>Prerequisites</h2>
+      <ul>
+        <li>Node.js (v18.0.0 or higher recommended)</li>
+        <li>Redis Server (running on default port <code>6379</code>)</li>
+      </ul>
+
+      <h2>1. Run Redis Server</h2>
+      <p>Make sure Redis is active on your local machine to handle session history caching:</p>
+      <pre><code class="language-bash">redis-server --daemonize yes</code><button class="btn-copy" onclick="copyCode(this)">Copy</button></pre>
+
+      <h2>2. Initialize Scribe API Backend</h2>
+      <p>Navigate to the API folder, adjust Node paths if necessary, and boot up the server:</p>
+      <pre><code class="language-bash">cd scribe-api
+npm install
+npm start</code><button class="btn-copy" onclick="copyCode(this)">Copy</button></pre>
+      <p>The backend console output will indicate boot-time auto-indexing progress and verify connection states:</p>
+      <pre><code>{"level":"info","message":"Connecting to Redis at redis://localhost:6379...","timestamp":"2026-06-12T09:30:11.458Z"}
+{"level":"info","message":"Redis connected successfully.","timestamp":"2026-06-12T09:30:11.502Z"}
+{"level":"info","message":"Redis client ready.","timestamp":"2026-06-12T09:30:11.510Z"}
+{"level":"info","message":"Auto-indexing local path on boot: /Scribe/scribe-api/data/nmail","timestamp":"2026-06-12T09:30:11.515Z"}
+{"level":"info","message":"Successfully indexed 2 files with TF-IDF for application 'nmail'","timestamp":"2026-06-12T09:30:11.530Z"}
+{"level":"info","message":"Scribe API running on http://localhost:8000","timestamp":"2026-06-12T09:30:11.545Z"}</code><button class="btn-copy" onclick="copyCode(this)">Copy</button></pre>
+
+      <h2>3. Configure Environment</h2>
+      <p>The API reads its configuration from a <code>.env</code> file in <code>scribe-api/</code>. A default file is included. Edit the values to match your environment:</p>
+      <pre><code class="language-bash"># scribe-api/.env
+
+# Server port
+PORT=8000
+
+# Redis connection URL
+# Local:      redis://localhost:6379
+# With auth:  redis://:yourpassword@yourhost:6379
+REDIS_URL=redis://localhost:6379
+
+# Reserved for future auth use
+JWT_SECRET=change-me-in-production</code><button class="btn-copy" onclick="copyCode(this)">Copy</button></pre>
+
+      <h2>4. Boot Widget Dev Server</h2>
+      <p>Start the React dashboard workspace to view Scribe Widget in action:</p>
+      <pre><code class="language-bash">cd scribe-widget
+npm install
+npm run dev -- --host 127.0.0.1 --port 3000</code><button class="btn-copy" onclick="copyCode(this)">Copy</button></pre>
+      <p>Open <a href="http://127.0.0.1:3000" target="_blank">http://127.0.0.1:3000</a> to view the simulated client dashboard.</p>
+    </section>
+
+    <!-- Section: React Widget -->
+    <section id="frontend" class="doc-section">
+      <h1>React Scribe Widget</h1>
+      <p>The frontend chatbot component is modular, light-themed, and easily embeddable into any React dashboard container.</p>
+
+      <h2>1. Component Integration</h2>
+      <p>Copy both <code>ScribeWidget.jsx</code> and <code>ScribeWidget.css</code> into your project's components subdirectory. Then embed it as follows:</p>
+      
+      <pre><code class="language-javascript">import ScribeWidget from './components/ScribeWidget';
+
+function ParentApp() {
+  const handleNavigation = (url) => {
+    // Triggers when the user clicks 'Open Page' in Scribe
+    console.log("Navigating router to:", url);
+    // e.g. history.push(url) or navigate(url)
+  };
+
+  return (
+    <div className="app-container">
+      <ScribeWidget
+        application="nmail"
+        apiUrl="http://localhost:8000/api"
+        userId="current_user_id"
+        onNavigate={handleNavigation}
+      />
+    </div>
+  );
+}</code><button class="btn-copy" onclick="copyCode(this)">Copy</button></pre>
+
+      <h2>2. Properties Schema</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Property</th>
+            <th>Type</th>
+            <th>Default</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>application</code></td>
+            <td>String</td>
+            <td><code>'nmail'</code></td>
+            <td>Matches the product documentation subfolder (e.g. <code>nmail</code> or <code>emacloud</code>).</td>
+          </tr>
+          <tr>
+            <td><code>apiUrl</code></td>
+            <td>String</td>
+            <td><code>'http://localhost:8000/api'</code></td>
+            <td>Base URL of the Scribe API Backend.</td>
+          </tr>
+          <tr>
+            <td><code>userId</code></td>
+            <td>String</td>
+            <td><code>'demoUser'</code></td>
+            <td>Identifies the logged-in client to separate Redis chat history caches.</td>
+          </tr>
+          <tr>
+            <td><code>onNavigate</code></td>
+            <td>Function</td>
+            <td><code>null</code></td>
+            <td>Callback returning the target routing url (e.g., <code>'/watchdog'</code>). If null, falls back to updating <code>window.location.hash</code>.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>3. Keyboard Controls</h2>
+      <ul>
+        <li><strong>Arrow Up</strong>: Focuses the input box and cycles backwards through previously sent user questions.</li>
+        <li><strong>Arrow Down</strong>: Cycles forward back down, eventually restoring the user's unsubmitted text draft.</li>
+      </ul>
+    </section>
+
+    <!-- Section: Document Schema -->
+    <section id="docs-format" class="doc-section">
+      <h1>Document Schema</h1>
+      <p>Scribe builds its search indexes by recursively scanning Markdown files and parsing YAML front-matter blocks at the beginning of each file.</p>
+
+      <h2>Example Document</h2>
+      <p>Create a Markdown file under <code>scribe-api/data/&lt;appCode&gt;/&lt;any-subfolders&gt;/</code>. For example: <code>scribe-api/data/nmail/monitoring/watchdog.md</code>:</p>
+      
+      <pre><code class="language-markdown">---
+title: Watchdog
+application: nmail
+module: monitoring
+url: /watchdog
+menu: Monitoring > Watchdog
+keywords:
+  - watchdog
+  - monitoring
+  - cron
+  - alerts
+---
+
+# Watchdog System
+
+Watchdog monitors system services, background processes, and active cron jobs. It sends real-time notifications when a service goes down or a scheduled cron fails.
+
+## Features
+
+- Service health checking and automated status reports.
+- Cron monitoring with alert generation.</code><button class="btn-copy" onclick="copyCode(this)">Copy</button></pre>
+
+      <h2>Front-matter Keys</h2>
+      <div class="field-grid">
+        <span class="field-label">title</span>
+        <span class="field-desc">The human-readable title of the screen or feature. Displays in search headers.</span>
+        
+        <span class="field-label">application</span>
+        <span class="field-desc">Target workspace code (e.g., <code>nmail</code>). Must match directory node.</span>
+        
+        <span class="field-label">module</span>
+        <span class="field-desc">Logical module categorization (e.g., <code>monitoring</code>).</span>
+        
+        <span class="field-label">url</span>
+        <span class="field-desc">The relative deep-link path used by the React widget router to navigate users.</span>
+        
+        <span class="field-label">menu</span>
+        <span class="field-desc">The navigation menu hierarchy trail (e.g. <code>Monitoring > Watchdog</code>) shown in Scribe replies.</span>
+        
+        <span class="field-label">keywords</span>
+        <span class="field-desc">An array of custom query keywords utilized by the scoring engine (searched using stemmed forms).</span>
+      </div>
+
+      <div class="callout warning">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-top: 2px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <div>
+          <div class="callout-title">YAML Delimiters Required</div>
+          <p>Front-matter blocks must be placed at the very top of files and enclosed between triple-dashed lines (<code>---</code>) with standard spacing formatting.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section: API Endpoints -->
+    <section id="api" class="doc-section">
+      <h1>API Endpoints</h1>
+      <p>Scribe exposes unauthenticated REST endpoints to query and manage the documentation search catalog and Redis sessions.</p>
+
+      <h2>1. GET /api/health</h2>
+      <p>Checks API server status. Used by the React widget for online/offline indicator dot.</p>
+      <p><strong>Response:</strong></p>
+      <pre><code class="language-json">{ "status": "ok" }</code><button class="btn-copy" onclick="copyCode(this)">Copy</button></pre>
+
+      <h2>2. POST /api/reindex</h2>
+      <p>Crawls the application's data folder recursively, rebuilds TF-IDF catalogs live without needing to restart Node, and <strong>automatically flushes all cached session answers</strong> for that application so users always receive fresh responses after doc changes.</p>
+      <p><strong>Payload:</strong></p>
+      <pre><code class="language-json">{ "application": "nmail" }</code><button class="btn-copy" onclick="copyCode(this)">Copy</button></pre>
+      <p><strong>Response:</strong></p>
+      <pre><code class="language-json">{
+  "status": "success",
+  "message": "Successfully indexed application documentation",
+  "filesIndexed": 2
+}</code><button class="btn-copy" onclick="copyCode(this)">Copy</button></pre>
+
+      <h2>3. POST /api/chat</h2>
+      <p>Submits a question and returns a navigation card. Implements a <strong>cache-first strategy</strong>: checks the last 10 session messages first. If the exact same question was already answered in the context window, the cached answer is returned immediately without running the indexer.</p>
+      <p><strong>Payload:</strong></p>
+      <pre><code class="language-json">{
+  "application": "nmail",
+  "sessionId": "sid_984hfsj3s",
+  "question": "what is watchdog?",
+  "userId": "demoUser"
+}</code><button class="btn-copy" onclick="copyCode(this)">Copy</button></pre>
+      <p><strong>Response:</strong></p>
+      <pre><code class="language-json">{
+  "answer": "Watchdog is available under **Monitoring > Watchdog**.\n\n### Description:\nWatchdog monitors system services, background processes...",
+  "url": "/watchdog"
+}</code><button class="btn-copy" onclick="copyCode(this)">Copy</button></pre>
+
+      <h2>4. GET /api/session</h2>
+      <p>Fetches the list of the last 10 messages (user and assistant) for a session on loading.</p>
+      <p><strong>Query Parameters:</strong> <code>?application=nmail&sessionId=sid_984hfsj3s&userId=demoUser</code></p>
+      <p><strong>Response:</strong></p>
+      <pre><code class="language-json">[
+  { "sender": "user", "message": "what is watchdog?", "timestamp": "2026-06-12T09:30:15.123Z" },
+  { "sender": "assistant", "message": "Watchdog is available under...", "url": "/watchdog", "timestamp": "2026-06-12T09:30:15.542Z" }
+]</code><button class="btn-copy" onclick="copyCode(this)">Copy</button></pre>
+
+      <h2>5. DELETE /api/session</h2>
+      <p>Clears cached message history from Redis and fallback in-memory databases. Called by the widget's trash icon button.</p>
+      <p><strong>Payload:</strong></p>
+      <pre><code class="language-json">{
+  "application": "nmail",
+  "sessionId": "sid_984hfsj3s",
+  "userId": "demoUser"
+}</code><button class="btn-copy" onclick="copyCode(this)">Copy</button></pre>
+    </section>
+
+    <!-- Section: Session Cache -->
+    <section id="cache" class="doc-section">
+      <h1>Session Cache</h1>
+      <p>Scribe uses a <strong>cache-first strategy</strong> for every chat query, backed by the Redis session context window. This avoids running the full TF-IDF indexer when the user asks a repeated question within the same conversation.</p>
+
+      <h2>How It Works</h2>
+      <pre><code>User sends a question
+        │
+        ▼
+  Load last 10 msgs from Redis (context window)
+        │
+        ▼
+  Exact match found? (case-insensitive)
+     ├─ YES → Return cached answer + url  ← indexer skipped ✓
+     └─ NO  → Run indexer.queryAnswer()
+                 └─ Save user + assistant msgs to Redis
+                    └─ Return fresh answer</code><button class="btn-copy" onclick="copyCode(this)">Copy</button></pre>
+
+      <h2>Cache Invalidation on Reindex</h2>
+      <p>When <code>POST /api/reindex</code> is called (either manually via the admin dashboard or programmatically), <strong>all Redis session keys</strong> for that application are flushed using a non-blocking <code>SCAN</code> loop. This guarantees that stale cached answers are never returned after documentation changes.</p>
+
+      <div class="callout info">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-top: 2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        <div>
+          <div class="callout-title">Context Window Size</div>
+          <p>The context window stores a maximum of <strong>10 messages</strong> per session (last 5 user + 5 assistant pairs). Older messages beyond this limit are automatically trimmed. Only questions within this window are eligible for a cache hit.</p>
+        </div>
+      </div>
+
+      <h2>Session Message Schema</h2>
+      <p>Each message entry stored in Redis has the following structure. The <code>url</code> field is only present on <code>assistant</code> entries where a document match was found:</p>
+      <pre><code class="language-json">{
+  "sender": "assistant",
+  "message": "Watchdog is available under **Monitoring > Watchdog**...",
+  "url": "/watchdog",
+  "timestamp": "2026-06-12T09:30:15.542Z"
+}</code><button class="btn-copy" onclick="copyCode(this)">Copy</button></pre>
+
+      <h2>Redis Key Pattern</h2>
+      <p>Sessions are stored and flushed using the following key schema:</p>
+      <pre><code>scribe:{application}:{userId}:{sessionId}
+
+Examples:
+  scribe:nmail:user_123:sid_a1b2c3d4e
+  scribe:emacloud:demoUser:sid_9z8y7x6w5</code><button class="btn-copy" onclick="copyCode(this)">Copy</button></pre>
+
+      <div class="callout warning">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-top: 2px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <div>
+          <div class="callout-title">Exact Match Only</div>
+          <p>Cache lookup is <strong>exact and case-insensitive</strong> — it does not do fuzzy or stemmed matching. This is intentional: fuzzy cache hits could return an answer for a slightly different question and mislead the user. Only byte-for-byte identical (lowercased) questions trigger a cache hit.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section: NLP & Stemming -->
+    <section id="nlp" class="doc-section">
+      <h1>NLP & Stemming Engine</h1>
+      <p>To avoid false matches and handle natural inputs correctly without heavy LLMs, Scribe integrates specialized classification pipelines.</p>
+
+      <h2>1. Intent Classification</h2>
+      <p>Scribe intercepts utility inputs first in <code>indexer.js</code> before triggering document index searches:</p>
+      <ul>
+        <li><strong>Time Queries</strong>: Searches matching <code>what time</code> or <code>time is it</code> return the system clock (e.g. <code>The current time is 03:00 PM.</code>).</li>
+        <li><strong>Date Queries</strong>: Queries for <code>today</code> or <code>date</code> return the full local date (e.g. <code>Today is Friday, June 12, 2026.</code>).</li>
+        <li><strong>Small-Talk</strong>: Handles standard greetings (<code>hi</code>, <code>hello</code>, <code>hey</code>, <code>sup</code>) and appreciation values (<code>thanks</code>, <code>thank you</code>) with pleasant custom conversational strings.</li>
+        <li><strong>Identity Queries</strong>: Matches inputs like <code>who are you</code> or <code>your name</code> to state its role.</li>
+      </ul>
+
+      <h2>2. Search Matching & Relevance Scoring</h2>
+      <p>If no conversational intent is recognized, Scribe scores document metadata using the following criteria:</p>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>Criteria</th>
+            <th>Weight / Score</th>
+            <th>Match Check Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Exact Title</strong></td>
+            <td>+100</td>
+            <td>Exact lowercase string comparison match with document title.</td>
+          </tr>
+          <tr>
+            <td><strong>Stemmed Exact Title</strong></td>
+            <td>+80</td>
+            <td>Comparison match of stemmed query tokens to stemmed title tokens.</td>
+          </tr>
+          <tr>
+            <td><strong>Subtitle Match</strong></td>
+            <td>+50</td>
+            <td>Title contains query string.</td>
+          </tr>
+          <tr>
+            <td><strong>Stemmed Subtitle Match</strong></td>
+            <td>+40</td>
+            <td>Stemmed title contains stemmed query string.</td>
+          </tr>
+          <tr>
+            <td><strong>Keywords Match</strong></td>
+            <td>+30 (per token)</td>
+            <td>Query stemmed tokens match document stemmed keyword arrays.</td>
+          </tr>
+          <tr>
+            <td><strong>File Path Match</strong></td>
+            <td>+40</td>
+            <td>File path includes lowercase query term.</td>
+          </tr>
+          <tr>
+            <td><strong>TF-IDF Content Match</strong></td>
+            <td>+0 to +50</td>
+            <td>Calculates stemmed term frequency scores against catalog body documents.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout note">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-top: 2px;"><polygon points="12 2 2 22 22 22 12 2"></polygon><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <div>
+          <div class="callout-title">Noise Reduction</div>
+          <p>Common English stopwords (e.g. <code>what</code>, <code>is</code>, <code>the</code>, <code>how</code>, <code>do</code>) are automatically removed from search queries. If a query only contains stopwords (and isn't a small-talk intent), search yields an empty result directly, avoiding random keyword overlaps.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Switches visible sections
+    function switchSection(sectionId) {
+      document.querySelectorAll('.doc-section').forEach(section => {
+        section.classList.remove('active');
+      });
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      
+      const targetSection = document.getElementById(sectionId);
+      if (targetSection) {
+        targetSection.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      // Add active state to caller menu item
+      const callerEl = event.currentTarget;
+      if (callerEl) {
+        callerEl.classList.add('active');
+      }
+    }
+
+    // Copy code button handler
+    function copyCode(button) {
+      const codeBlock = button.previousElementSibling;
+      const textToCopy = codeBlock.textContent;
+
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        const originalText = button.textContent;
+        button.textContent = '✓ Copied!';
+        button.style.backgroundColor = '#15803d';
+        button.style.color = '#ffffff';
+
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.style.backgroundColor = '';
+          button.style.color = '';
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy text: ', err);
+      });
+    }
+
+    // Quick filter menu items
+    function filterMenu() {
+      const filter = document.getElementById('menu-search').value.toLowerCase();
+      const menuItems = document.querySelectorAll('.nav-item');
+      
+      menuItems.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        if (text.includes(filter)) {
+          item.style.display = 'flex';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

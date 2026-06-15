@@ -1,0 +1,375 @@
+/* Scribe Widget CSS - Minimal Light Theme */
+
+:root {
+  --scribe-bg: #ffffff;
+  --scribe-border: #e2e8f0;
+  --scribe-accent-violet: #6d28d9;
+  --scribe-text-primary: #1e293b;
+  --scribe-text-secondary: #64748b;
+  --scribe-bubble-user: #4f46e5;
+  --scribe-bubble-agent: #f1f5f9;
+}
+
+/* Floating Action Button */
+.scribe-float-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #0f172a;
+  border: 1px solid #334155;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.scribe-float-btn:hover {
+  transform: scale(1.05);
+  background: #1e293b;
+}
+
+.scribe-float-btn:active {
+  transform: scale(0.95);
+}
+
+.scribe-status-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #0f172a;
+}
+.scribe-status-dot.online { background-color: #10b981; }
+.scribe-status-dot.offline { background-color: #ef4444; }
+
+/* Chat Window */
+.scribe-window {
+  position: fixed;
+  bottom: 85px;
+  right: 20px;
+  z-index: 9999;
+  width: 360px;
+  height: 520px;
+  border-radius: 16px;
+  background: var(--scribe-bg);
+  border: 1px solid var(--scribe-border);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: var(--scribe-text-primary);
+  transition: transform 0.2s ease;
+}
+
+/* Header */
+.scribe-header {
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--scribe-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.scribe-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scribe-header-title h5 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.scribe-header-status {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #10b981;
+}
+
+.scribe-header-status.offline {
+  background-color: #ef4444;
+}
+
+.scribe-header-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.scribe-header-btn {
+  background: transparent;
+  border: none;
+  color: var(--scribe-text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.scribe-header-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* Chat Body */
+.scribe-chat-body {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Welcome Screen */
+.scribe-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  height: 100%;
+  padding: 10px 0;
+}
+
+.scribe-welcome-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.scribe-welcome h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #0f172a;
+}
+
+.scribe-welcome p {
+  color: var(--scribe-text-secondary);
+  font-size: 12.5px;
+  margin-bottom: 16px;
+  max-width: 220px;
+}
+
+.scribe-welcome-suggestions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.scribe-suggestion-chip {
+  background: #f8fafc;
+  border: 1px solid var(--scribe-border);
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--scribe-text-primary);
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.scribe-suggestion-chip:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+/* Messages */
+.scribe-message-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 85%;
+}
+
+.scribe-message-wrapper.user {
+  align-self: flex-end;
+}
+
+.scribe-message-wrapper.assistant {
+  align-self: flex-start;
+}
+
+.scribe-message-bubble {
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.scribe-message-wrapper.user .scribe-message-bubble {
+  background: var(--scribe-bubble-user);
+  border-bottom-right-radius: 2px;
+  color: white;
+}
+
+.scribe-message-wrapper.assistant .scribe-message-bubble {
+  background: var(--scribe-bubble-agent);
+  border-bottom-left-radius: 2px;
+  border: 1px solid var(--scribe-border);
+  color: var(--scribe-text-primary);
+}
+
+.scribe-message-timestamp {
+  font-size: 9px;
+  color: var(--scribe-text-secondary);
+  margin-top: 2px;
+}
+
+.scribe-message-wrapper.user .scribe-message-timestamp {
+  align-self: flex-end;
+}
+
+.scribe-message-wrapper.assistant .scribe-message-timestamp {
+  align-self: flex-start;
+}
+
+/* Navigation button */
+.scribe-nav-btn {
+  margin-top: 8px;
+  background: #0f172a;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.1s;
+  width: fit-content;
+}
+
+.scribe-nav-btn:hover {
+  background: #1e293b;
+}
+
+/* Typing Indicator */
+.scribe-typing {
+  align-self: flex-start;
+  background: var(--scribe-bubble-agent);
+  border: 1px solid var(--scribe-border);
+  padding: 10px 16px;
+  border-radius: 12px;
+  border-bottom-left-radius: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.scribe-typing span {
+  width: 5px;
+  height: 5px;
+  background-color: var(--scribe-text-secondary);
+  border-radius: 50%;
+  display: inline-block;
+  animation: typingBounce 1.4s infinite ease-in-out both;
+}
+
+.scribe-typing span:nth-child(1) { animation-delay: -0.32s; }
+.scribe-typing span:nth-child(2) { animation-delay: -0.16s; }
+
+/* Input Container */
+.scribe-input-container {
+  padding: 12px 16px;
+  border-top: 1px solid var(--scribe-border);
+  background: #ffffff;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.scribe-input-wrapper {
+  flex: 1;
+}
+
+.scribe-input-field {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--scribe-text-primary);
+  font-size: 13px;
+  outline: none;
+}
+
+.scribe-input-field:focus {
+  border-color: #3b82f6;
+}
+
+.scribe-send-btn {
+  background: #4f46e5;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  cursor: pointer;
+}
+
+.scribe-send-btn:hover {
+  background: #4338ca;
+}
+
+.scribe-send-btn:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+@keyframes typingBounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1.0); }
+}
+
+.scribe-chat-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scribe-chat-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scribe-chat-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+/* markdown overrides */
+.scribe-message-bubble p {
+  margin: 0 0 6px 0;
+}
+.scribe-message-bubble p:last-child {
+  margin-bottom: 0;
+}
+.scribe-message-bubble ul {
+  margin: 6px 0;
+  padding-left: 16px;
+}
+.scribe-message-bubble h3 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 8px 0 4px 0;
+  color: var(--scribe-accent-violet);
+}
